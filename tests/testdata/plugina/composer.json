@@ -1,0 +1,8 @@
+{
+    "name": "test/plugina",
+    "type": "wordpress-plugin",
+    "require": {
+        "brain/hierarchy":"2.1",
+        "nicmart/tree":"0.1.5 - 0.2.0"
+    }
+}

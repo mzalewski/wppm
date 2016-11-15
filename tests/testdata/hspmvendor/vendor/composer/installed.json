@@ -1,0 +1,42 @@
+[
+    {
+        "name": "nicmart/tree",
+        "version": "v0.1.9",
+        "version_normalized": "0.1.9.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/nicmart/Tree.git",
+            "reference": "d5b0607d51a2e855c40c035784d01a71331e539a"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/nicmart/Tree/zipball/d5b0607d51a2e855c40c035784d01a71331e539a",
+            "reference": "d5b0607d51a2e855c40c035784d01a71331e539a",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.3"
+        },
+        "time": "2013-04-22 09:49:08",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "Tree": "src/",
+                "Tree\\Test": "tests"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Nicolò Martini",
+                "email": "nicmartnic@gmail.com",
+                "homepage": "http://nicolo.martini.io"
+            }
+        ],
+        "description": "A basic but flexible php tree data structure and a fluent tree builder implementation."
+    }
+]

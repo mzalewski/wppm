@@ -1,0 +1,94 @@
+[
+    {
+        "name": "some/otherdep",
+        "version": "2.0.0",
+        "version_normalized": "2.0.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://dist",
+            "reference": "adb52da233e586051a577ef5eabe2c537df785d5"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://dist",
+            "reference": "adb52da233e586051a577ef5eabe2c537df785d5",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.5"
+        },
+
+        "suggest": {
+            "symfony/finder": "Allows loading of templates using Symfony finder component."
+        },
+        "time": "2016-09-15 13:33:53",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.2.x-dev",
+                "dev-dev": "2.0.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Some\\Other\\Dep\\": "src/some/other/dep"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Giuseppe Mazzapica",
+                "email": "giuseppe.mazzapica@gmail.com"
+            }
+        ],
+        "description": "No-dependencies package that embodies WordPress template hierarchy",
+        "keywords": [
+            "wordpress"
+        ]
+    },
+    {
+        "name": "and/another",
+        "version": "v0.1",
+        "version_normalized": "0.1.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://ANOTHER",
+            "reference": "d5b0607d51a2e855c40c035784d01a71331e539a"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ONE",
+            "reference": "d5b0607d51a2e855c40c035784d01a71331e539a",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.3"
+        },
+        "time": "2013-04-22 09:49:08",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "Another": "src/another",
+                "Another\\Assets": "assets/another",
+                "Another\\Test": "tests"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Nicolò Martini",
+                "email": "nicmartnic@gmail.com",
+                "homepage": "http://nicolo.martini.io"
+            }
+        ],
+        "description": "A basic but flexible php tree data structure and a fluent tree builder implementation."
+    }
+]

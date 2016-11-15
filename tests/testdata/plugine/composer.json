@@ -1,0 +1,8 @@
+{
+    "name": "test/plugine",
+    "type": "wordpress-plugin",
+    "require": {
+        "some/otherdep":"2.0",
+        "and/another":"0.1"
+    }
+}

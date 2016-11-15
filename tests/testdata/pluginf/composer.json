@@ -1,0 +1,7 @@
+{
+    "name": "test/pluginf",
+    "type": "wordpress-plugin",
+    "require": {
+        "one/moredependency":"4.0"
+    }
+}

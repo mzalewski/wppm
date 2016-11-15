@@ -144,7 +144,9 @@ if ( ! class_exists( 'WPPM' ) ) {
             if ($path == '' || $path == '/')
                 return false;
             if (file_exists($path . "/vendor/composer/composer/src/Composer/Autoload/ClassLoader.php")) {
-                require $path . "/vendor/composer/composer/src/Composer/Autoload/ClassLoader.php";
+                if (!class_exists('\Composer\Autoload\ClassLoader')) {
+                    require $path . "/vendor/composer/composer/src/Composer/Autoload/ClassLoader.php";
+                }
                 return $path;
             }
             return self::load_class_loader(dirname($path));

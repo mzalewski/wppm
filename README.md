@@ -25,7 +25,7 @@ To add Composer support to your plugin, you will need to do the following:
   
   ```
   require_once __DIR__ . "/vendor/hotsource/wppm/wppm.php";
-  if ( ! WPPM:autoload( __FILE__ ) )
+  if ( ! WPPM::autoload( __FILE__ ) )
       return;
   ```
 

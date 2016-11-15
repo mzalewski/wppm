@@ -82,9 +82,9 @@ class WPPM {
     public static function render_admin_page()
     {
         ?>
-            <p class="wrap">
-                <h1>Plugin Conflicts</h1>
-                <?php
+        <p class="wrap">
+        <h1>Plugin Conflicts</h1>
+        <?php
 
         $autoload = self::generate_autoload();
 
@@ -96,7 +96,7 @@ class WPPM {
 
             for ($i = 0; $i < count($autoload); $i++) {
                 ?><h3>Problem #<?php echo $i+1; ?></h3>
-                    <pre readonly style="border:1px solid #ccc; display:inline-block;background:white; padding:10px 50px 10px 10px;"><?php echo trim($autoload[$i],"\n"); ?></pre>
+                <pre readonly style="border:1px solid #ccc; display:inline-block;background:white; padding:10px 50px 10px 10px;"><?php echo trim($autoload[$i],"\n"); ?></pre>
 
                 <?php
             } ?>
@@ -111,23 +111,59 @@ class WPPM {
 
     public static function autoload( $pluginFile, $display_error = true ) {
         self::setup_admin_pages();
-       $result = self::do_autoload($pluginFile);
-       if ( $display_error && !$result ) {
-           array_push(WPPM::$errorPlugins,$pluginFile);
-           if (self::$autoloadNoticeAdded == false) {
-               self::$autoloadNoticeAdded = true;
-               add_action( 'admin_notices', array( 'WPPM', 'show_autoload_warning' ) );
-           }
-       }
+        $result = self::do_autoload($pluginFile);
+        if ( $display_error && !$result ) {
+            array_push(WPPM::$errorPlugins,$pluginFile);
+            if (self::$autoloadNoticeAdded == false) {
+                self::$autoloadNoticeAdded = true;
+                add_action( 'admin_notices', array( 'WPPM', 'show_autoload_warning' ) );
+            }
+        }
         return $result;
 
 
     }
+    private static $composerSrcFolder = null;
+    private static function load_class_loader( $path ) {
+        if ($path == '' || $path == '/')
+            return false;
+        if (file_exists($path  . "/vendor/composer/composer/src/Composer/Autoload/ClassLoader.php")) {
+            require $path  . "/vendor/composer/composer/src/Composer/Autoload/ClassLoader.php";
+            return $path;
+        }
+        return self::load_class_loader(dirname($path));
+    }
+    private static function load_composer() {
+        $vendorDir = self::load_class_loader(__DIR__) . "/vendor";
+        $toLoad = array(
+            'Symfony\\Polyfill\\Mbstring\\' => array($vendorDir . '/symfony/polyfill-mbstring'),
+            'Symfony\\Component\\Process\\' => array($vendorDir . '/symfony/process'),
+            'Symfony\\Component\\Finder\\' => array($vendorDir . '/symfony/finder'),
+            'Symfony\\Component\\Filesystem\\' => array($vendorDir . '/symfony/filesystem'),
+            'Symfony\\Component\\Debug\\' => array($vendorDir . '/symfony/debug'),
+            'Symfony\\Component\\Console\\' => array($vendorDir . '/symfony/console'),
+            'Seld\\PharUtils\\' => array($vendorDir . '/seld/phar-utils/src'),
+            'Seld\\JsonLint\\' => array($vendorDir . '/seld/jsonlint/src/Seld/JsonLint'),
+            'Seld\\CliPrompt\\' => array($vendorDir . '/seld/cli-prompt/src'),
+            'Psr\\Log\\' => array($vendorDir . '/psr/log/Psr/Log'),
+            'JsonSchema\\' => array($vendorDir . '/justinrainbow/json-schema/src/JsonSchema'),
+            'Composer\\Spdx\\' => array($vendorDir . '/composer/spdx-licenses/src'),
+            'Composer\\Semver\\' => array($vendorDir . '/composer/semver/src'),
+            'Composer\\Installers\\' => array($vendorDir . '/composer/installers/src/Composer/Installers'),
+            'Composer\\CaBundle\\' => array($vendorDir . '/composer/ca-bundle/src'),
+            'Composer\\' => array($vendorDir . '/composer/composer/src/Composer'),
+            'WPPM\\'=>  array(dirname(__FILE__) . '/src/WPPM')
+        );
+        $loader = new \Composer\Autoload\ClassLoader();
+        // register classes with namespaces
+        foreach ($toLoad as $key=>$value)
+            $loader->setPsr4($key, $value);
+        // activate the autoloader
+        $loader->register();
+
+    }
     public static function generate_autoload( ) {
-        require_once(dirname(__FILE__) . '/vendor/autoload.php' );
-        require_once(dirname(__FILE__) . '/src/WPPM/WordPress/PluginSolver.php');
-        require_once(dirname(__FILE__) . '/src/WPPM/WordPress/WPAutoloadGenerator.php');
-        require_once(dirname(__FILE__) . '/src/WPPM/WordPress/WPInstalledRepository.php');
+        self::load_composer();
         $pluginSolver = new \WPPM\WordPress\PluginSolver(self::$vendorDir);
         $plugins = get_option('active_plugins');
 

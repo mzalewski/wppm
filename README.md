@@ -23,11 +23,11 @@ To add Composer support to your plugin, you will need to do the following:
  
  3 - Add the following code snippet to autoload your plugin:
   
-  [code]
+  ```
   require_once \_\_dir\_\_ . "/vendor/hotsource/wppm/wppm.php";
   if ( ! WPPM:autoload( __FILE__ ) )
       return;
-  [/code]
+  ```
 
 ## Other notes
 

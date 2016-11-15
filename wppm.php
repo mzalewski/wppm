@@ -121,8 +121,13 @@ if ( ! class_exists( 'WPPM' ) ) {
             </div><?php
         }
 
+        private static function detect_plugin_activation() {
+            add_action( 'activated_plugin', array('WPPM','generate_autoload', 10 ));
+            add_action( 'deactivated_plugin', array('WPPM','generate_autoload', 10 ));
+        }
         public static function autoload($pluginFile, $display_error = true)
         {
+            self::detect_plugin_activation();
             self::setup_admin_pages();
             $result = self::do_autoload($pluginFile);
             if ($display_error && !$result) {
@@ -204,5 +209,6 @@ if ( ! class_exists( 'WPPM' ) ) {
             return true;
 
         }
+
     }
 }

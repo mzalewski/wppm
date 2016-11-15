@@ -1,6 +1,7 @@
 <?php
 namespace WPPM\WordPress;
 
+use Composer\Config;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
@@ -11,9 +12,16 @@ use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\IO\BufferIO;
 use Composer\Json\JsonFile;
+use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Loader\RootPackageLoader;
+use Composer\Package\RootPackage;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryManager;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\VersionParser;
 
 class PluginSolver {
 
@@ -52,7 +60,7 @@ class PluginSolver {
         $this->policy = new DefaultPolicy();
         $this->solver = new Solver($this->policy, $this->pool, $this->repoInstalled,$this->io );
 
-       }
+    }
     public function getPluginPackage($packageName) {
         $package  = $this->pool->whatProvides($packageName,null,true,false);
         if (count($package) == 0)
@@ -97,9 +105,7 @@ class PluginSolver {
 
         return $package;
     }
-
-    public function addAdditionalVendorsFolder($pluginDir = '')
-    {
+    private function addVendorsDirInstalledJson($pluginDir) {
         $repositoryFile = new JsonFile(rtrim($pluginDir, '/') . "/vendor/composer/installed.json");
         if (!$repositoryFile->exists()) {
             $this->io->warning("Installed.json repository in " . $pluginDir . " not found - do you need to run composer install?");
@@ -115,8 +121,64 @@ class PluginSolver {
             $installedPackage = $packageLoader->load($installedPackageData);
             $installedPackage->setExtra(array('wpPluginInstallPath' => $pluginDir ));
             $this->vendorsRepo->addPackage($installedPackage);
+            //          $this->repoInstalled->addPackage($alias);
+
             //$this->request($installedPackage->getName(),new Constraint('=',$installedPackage->getVersion()));
         }
+    }
+    private function addVendorsDirRootPackage($pluginDir) {
+        // Just get aliases for now....
+        $rootPackageFile = new JsonFile(rtrim($pluginDir, '/') . "/composer.json");
+        if ($rootPackageFile->exists() == false)
+            return;
+        $rootData = $rootPackageFile->read();
+        $rootData["version"] = "dev";
+        $aliases = array();
+        //  $realPackage = new RootPackage($rootData['name'],"1.0","1.0");
+        $loader = new ArrayLoader();
+        $realPackage = $loader->load($rootData);
+
+        foreach (array('require', 'require-dev') as $linkType) {
+            if (isset($rootData[$linkType])) {
+                $linkInfo = BasePackage::$supportedLinkTypes[$linkType];
+                $method = 'get'.ucfirst($linkInfo['method']);
+                $links = array();
+                foreach ($realPackage->$method() as $link) {
+
+                    $links[$link->getTarget()] = $link->getConstraint()->getPrettyString();
+                }
+                $aliases = $this->extractAliases($links, $aliases);
+            }
+        }
+        foreach ($aliases as $alias) {
+            $package = $this->vendorsRepo->findPackage($alias['package'],$alias['version']);
+            if ($package == null)
+                $package = $this->repoInstalled->findPackage($alias['package'],$alias['version']);
+
+            $this->vendorsRepo->addPackage(new AliasPackage($package,$alias['alias'],$alias['alias'] . " (from " . $alias['version'] . ")"));
+        }
+    }
+    public function addAdditionalVendorsFolder($pluginDir = '')
+    {
+        $this->addVendorsDirInstalledJson($pluginDir);
+        $this->addVendorsDirRootPackage($pluginDir);
+    }
+    private function extractAliases(array $requires, array $aliases)
+    {
+        $versionParser = new VersionParser();
+        foreach ($requires as $reqName => $reqVersion) {
+
+            if (preg_match('{^([^,\s#]+)(?:#[^ ]+)? +as +([^,\s]+)$}', $reqVersion, $match)) {
+                $aliases[] = array(
+                    'package' => strtolower($reqName),
+                    'version' => $versionParser->normalize($match[1], $reqVersion),
+                    'alias' => $match[2],
+                    'alias_normalized' => $versionParser->normalize($match[2], $reqVersion),
+                );
+            }
+        }
+
+        return $aliases;
     }
 
     public function addPluginToInstall($pluginDir = '') {
@@ -152,7 +214,7 @@ class PluginSolver {
     public function solve()
     {
 
-      //  if (!getenv("COMPOSER_HOME") && !getenv("HOME"))
+        //  if (!getenv("COMPOSER_HOME") && !getenv("HOME"))
         putenv("COMPOSER_HOME=".self::$composer_home);
         putenv("HOME=".self::$composer_home);
         try {

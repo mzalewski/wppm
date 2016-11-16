@@ -65,11 +65,18 @@ if ( ! class_exists( 'WPPM' ) ) {
             if (!file_exists(self::$vendorDir . "/vendor/autoload.php") || !file_exists(self::$vendorDir . "/installedplugins.json")) {
                 return false;
             }
-            require_once(self::$vendorDir . "/vendor/autoload.php");
 
             $autoloadedPlugins = json_decode(file_get_contents(self::$vendorDir . "/installedplugins.json"));
+            foreach ($autoloadedPlugins as $pluginFolder)
+                if (!file_exists($pluginFolder))
+                    return false;
+            if (!in_array(dirname($pluginFile), $autoloadedPlugins))
+                return false;
 
-            return in_array(dirname($pluginFile), $autoloadedPlugins);
+
+            require_once(self::$vendorDir . "/vendor/autoload.php");
+
+            return true;
         }
 
         private static function setup_admin_pages()
@@ -122,8 +129,9 @@ if ( ! class_exists( 'WPPM' ) ) {
         }
 
         private static function detect_plugin_activation() {
-            add_action( 'activated_plugin', array('WPPM','generate_autoload', 10 ));
-            add_action( 'deactivated_plugin', array('WPPM','generate_autoload', 10 ));
+
+            add_action( 'activated_plugin', array('WPPM','generate_autoload_on_activate'), 10 );
+            add_action( 'deactivated_plugin', array('WPPM','generate_autoload_on_deactivate'), 10 );
         }
         public static function autoload($pluginFile, $display_error = true)
         {
@@ -188,11 +196,22 @@ if ( ! class_exists( 'WPPM' ) ) {
 
         }
 
-        public static function generate_autoload()
+        public static function generate_autoload_on_deactivate( $plugin ) {
+            $plugins = get_option('active_plugins');
+            $plugins= array_diff($plugins,array($plugin));
+            WPPM::generate_autoload($plugins);
+        }
+        public static function generate_autoload_on_activate( $plugin ) {
+
+            WPPM::generate_autoload();
+        }
+
+        public static function generate_autoload( $plugins = null )
         {
             self::load_composer();
             $pluginSolver = new \WPPM\WordPress\PluginSolver(self::$vendorDir);
-            $plugins = get_option('active_plugins');
+            if ($plugins == null)
+                $plugins = get_option('active_plugins');
 
             for ($i = 0; $i < count($plugins); $i++) {
                 $key = $plugins[$i];
